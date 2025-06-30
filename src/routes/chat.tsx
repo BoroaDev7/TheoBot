@@ -3,7 +3,6 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
 import { v4 as uuidv4 } from "uuid";
-const sessionId = useRef(uuidv4());
 
 type Mensajes = {
   autor: "agente" | "usuario";
@@ -22,6 +21,7 @@ export default function RouteComponent() {
   ]);
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
+  const sessionId = useRef(uuidv4());
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
