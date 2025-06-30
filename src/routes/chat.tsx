@@ -1,97 +1,121 @@
-import { Button } from "@/components/ui/button";
 import { createFileRoute } from "@tanstack/react-router";
+import { useState, useRef, useEffect } from "react";
+import { Button } from "@/components/ui/button";
 
 type Mensajes = {
   autor: "agente" | "usuario";
   texto: string;
 };
-
-type Chats = {
-  chatId: string;
-  titulo: string;
-  contenido: Mensajes[];
-};
-
-const chatBiblico: Chats = {
-  chatId: "chat-001",
-  titulo: "Consulta sobre versículos",
-  contenido: [
-    { autor: "usuario", texto: "¿Qué dice Juan 3:16?" },
-    {
-      autor: "agente",
-      texto:
-        "Juan 3:16 dice: 'Porque de tal manera amó Dios al mundo, que ha dado a su Hijo unigénito...'",
-    },
-    { autor: "usuario", texto: "¿Hay algún versículo sobre el miedo?" },
-    {
-      autor: "agente",
-      texto:
-        "Sí, 2 Timoteo 1:7 dice: 'Porque no nos ha dado Dios espíritu de cobardía, sino de poder, de amor y de dominio propio.'",
-    },
-  ],
-};
-
-const chatTeologia: Chats = {
-  chatId: "chat-002",
-  titulo: "Dudas teológicas",
-  contenido: [
-    {
-      autor: "agente",
-      texto: "Bienvenido como te puedo ayudar hoy?",
-    },
-    { autor: "usuario", texto: "¿Qué es la Trinidad?" },
-    {
-      autor: "agente",
-      texto:
-        "La Trinidad es la doctrina cristiana que enseña que Dios es uno en esencia y tres en personas: Padre, Hijo y Espíritu Santo.",
-    },
-    {
-      autor: "usuario",
-      texto:
-        "¿Jesús es Dios o solo un profeta? La Trinidad es la doctrina cristiana que enseña que Dios es uno en esencia y tres en personas: Padre, Hijo y Espíritu Santo.",
-    },
-    {
-      autor: "agente",
-      texto:
-        "En la fe cristiana, Jesús es Dios encarnado, el Hijo de Dios, y también el Salvador del mundo.",
-    },
-  ],
-};
-const historial: Chats[] = [chatBiblico, chatTeologia];
 export const Route = createFileRoute("/chat")({
   component: RouteComponent,
 });
-function RouteComponent() {
+export default function RouteComponent() {
+  const [mensajes, setMensajes] = useState<Mensajes[]>([
+    {
+      autor: "agente",
+      texto:
+        "Hi, I'm TheoBot. I'm here to guide you with faith-based insights and help you explore your theological questions with care 🙏",
+    },
+  ]);
+  const [input, setInput] = useState("");
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [mensajes]);
+
+  const enviarMensaje = async () => {
+    if (!input.trim()) return;
+
+    setMensajes((prev) => [...prev, { autor: "usuario", texto: input }]);
+    const mensajeEnviar = input;
+    setInput("");
+
+    try {
+      const res = await fetch("http://localhost:3001/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: mensajeEnviar,
+          sessionId: "default-session",
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.reply && data.reply.length > 0) {
+        const respuestaAgente = data.reply.join(" ");
+        setMensajes((prev) => [
+          ...prev,
+          { autor: "agente", texto: respuestaAgente },
+        ]);
+      } else {
+        setMensajes((prev) => [
+          ...prev,
+          { autor: "agente", texto: "No hay respuesta del agente." },
+        ]);
+      }
+    } catch (error) {
+      setMensajes((prev) => [
+        ...prev,
+        { autor: "agente", texto: "Error al comunicarse con el servidor." },
+      ]);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      enviarMensaje();
+    }
+  };
+
   return (
-    <div className="grid grid-cols-3 ">
-      {/* History */}
-      <div className="space-y-1 h-screen overflow-y-auto">
-        <h3 className="text-blue-400 font-bold"> Chat History</h3>
-        {historial.map((chat) => (
-          <div>
-            <Button
-              variant={"ghost"}
-              key={chat.chatId}
-              className=" flex justify-start p-0 w-36 hover:bg-amber-100"
-            >
-              <h1 className="p-1 truncate"> {chat.titulo}</h1>
-            </Button>
-          </div>
-        ))}
+    <div className="grid grid-cols-3 md:grid-cols-3 h-[800px]">
+      {/* Opcional: espacio para lista de chats si quieres */}
+      <div className="space-y-1 h-96 overflow-y-auto border-r p-2">
+        <h3 className="text-blue-400 font-bold mb-4">Chat History</h3>
+        <h1> Future Implementation Coming soon 🙌</h1>
       </div>
-      {/* Messages */}
-      <div className="col-span-2 h-screen overflow-y-auto">
-        {chatTeologia.contenido.map((mensaje) => (
-          <div className="">
-            {mensaje.autor === "agente" ? (
-              <div className="">{mensaje.texto}</div>
-            ) : (
-              <div className="bg-blue-300 rounded-2xl max-w-lg ml-80 px-4 py-2">
-                <p className="font-semibold text-sm"> {mensaje.texto}</p>
-              </div>
-            )}
-          </div>
-        ))}
+
+      <div className="col-span-2 flex flex-col p-4 h-full">
+        <div
+          className="flex-1 overflow-y-auto mb-4 px-2 space-y-3"
+          style={{ scrollbarWidth: "thin" }}
+        >
+          {mensajes.map((mensaje, idx) => (
+            <div key={idx} className="w-full flex">
+              {mensaje.autor === "usuario" ? (
+                <div className="ml-auto bg-blue-300 rounded-2xl max-w-lg px-4 py-2">
+                  <p className="font-semibold text-sm whitespace-pre-wrap">
+                    {mensaje.texto}
+                  </p>
+                </div>
+              ) : (
+                <div className="mr-auto bg-gray-200 rounded-2xl max-w-lg px-4 py-2">
+                  <p className="text-sm whitespace-pre-wrap">{mensaje.texto}</p>
+                </div>
+              )}
+            </div>
+          ))}
+          <div ref={scrollRef} />
+        </div>
+
+        <div className="flex space-x-2">
+          <textarea
+            rows={2}
+            className="flex-grow resize-none rounded-md border border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            placeholder="Escribe tu mensaje..."
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+          />
+          <Button onClick={enviarMensaje} className="whitespace-nowrap">
+            Enviar
+          </Button>
+        </div>
       </div>
     </div>
   );
