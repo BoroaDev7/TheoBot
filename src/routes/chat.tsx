@@ -74,7 +74,6 @@ export default function RouteComponent() {
 
   return (
     <div className="grid grid-cols-3 md:grid-cols-3 h-[800px]">
-      {/* Opcional: espacio para lista de chats si quieres */}
       <div className="space-y-1 h-96 overflow-y-auto border-r p-2">
         <h3 className="text-blue-400 font-bold mb-4">Chat History</h3>
         <h1> Future Implementation Coming soon 🙌</h1>
