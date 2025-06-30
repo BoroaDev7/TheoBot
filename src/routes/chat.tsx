@@ -32,7 +32,7 @@ export default function RouteComponent() {
     setInput("");
 
     try {
-      const res = await fetch("http://localhost:3001/chat", {
+      const res = await fetch("https://theobot-backend.onrender.com/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
