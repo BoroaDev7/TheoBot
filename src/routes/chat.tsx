@@ -2,6 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
+import { v4 as uuidv4 } from "uuid";
+const sessionId = useRef(uuidv4());
+
 type Mensajes = {
   autor: "agente" | "usuario";
   texto: string;
@@ -39,7 +42,7 @@ export default function RouteComponent() {
         },
         body: JSON.stringify({
           message: mensajeEnviar,
-          sessionId: "default-session",
+          sessionId: sessionId.current,
         }),
       });
 
